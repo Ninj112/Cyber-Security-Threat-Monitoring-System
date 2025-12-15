@@ -12,8 +12,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const commandHistory = [];
     let historyIndex = -1;
-    let sortKey = 'time';
-    let sortDirection = 'desc';
+    let sortKey = 'severity';
+    let sortDirection = 'asc';  // asc for severity means HIGH first (priority 1)
     let autoRefresh = false;
     let refreshInterval = null;
 
@@ -30,13 +30,37 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to sort threats
     function sortThreats(threats) {
+        // Severity priority for proper sorting
+        const severityPriority = {
+            'HIGH': 1,
+            'MEDIUM': 2,
+            'LOW': 3
+        };
+        
+        // Status priority for proper sorting
+        const statusPriority = {
+            'Active': 1,
+            'Blocked': 2
+        };
+        
         return threats.sort((a, b) => {
             let aVal = a[sortKey];
             let bVal = b[sortKey];
             
+            // Special handling for time sorting
             if (sortKey === 'time') {
                 aVal = new Date(aVal);
                 bVal = new Date(bVal);
+            }
+            // Special handling for severity sorting
+            else if (sortKey === 'severity') {
+                aVal = severityPriority[aVal] || 999;
+                bVal = severityPriority[bVal] || 999;
+            }
+            // Special handling for status sorting
+            else if (sortKey === 'status') {
+                aVal = statusPriority[aVal] || 999;
+                bVal = statusPriority[bVal] || 999;
             }
             
             if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
