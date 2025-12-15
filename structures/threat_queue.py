@@ -7,7 +7,7 @@ PRIORITY = {
 }
 
 class Threat:
-    """Represents a security threat with priority-based sorting."""
+    "Represents a security threat with priority-based sorting."
     def __init__(self, ip, attack, severity, time):
         self.ip = ip
         self.attack = attack
