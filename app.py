@@ -80,6 +80,8 @@ def attack():
     ip = data.get('ip')
     attack_type = data.get('attack')
     if ip and attack_type:
+        if attack_type not in threat_map:
+            return jsonify({"status": "error", "message": "Unknown attack type."})
         if ip in blocked_ips:
             return jsonify({"status": "blocked", "message": f"IP {ip} is blocked."})
 

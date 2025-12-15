@@ -43,10 +43,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     .then(data => {
                         if (data.status === 'success') {
                             appendAttacker('[+] Attack executed successfully');
-                        } else if (data.status === 'blocked') {
-                            appendAttacker(`[!] ${data.message}`);
                         } else {
-                            appendAttacker('[!] Error executing attack');
+                            appendAttacker(`[!] ${data.message || 'Error executing attack'}`);
                         }
                     });
                 } else {

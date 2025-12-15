@@ -10,11 +10,5 @@
     "attack": "SQL Injection",
     "severity": "HIGH",
     "time": 1765799437.092543
-  },
-  {
-    "ip": "172.0.9.0",
-    "attack": "SQL injwct",
-    "severity": "LOW",
-    "time": 1765799509.2684462
   }
 ]
