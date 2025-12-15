@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>${t.severity}</td>
                 <td>${t.ip}</td>
                 <td>${t.attack}</td>
+                <td>${t.time}</td>
             `;
             threatsTbody.appendChild(row);
         });

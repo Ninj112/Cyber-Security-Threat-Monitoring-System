@@ -125,39 +125,36 @@ def defender_command():
                 "status": status,
                 "severity": t.severity,
                 "ip": t.ip,
-                "attack": t.attack
+                "attack": t.attack,
+                "time": time.ctime(t.time)
             })
         response["show_table"] = True
         response["threats"] = threats_list
-    elif cmd == "back":
-        response["output"] = "Exited view mode."
     elif cmd == "history":
         load_new_attacks()
-        output = "\nThreat History:\n"
+        history_text = "Threat History:\n"
         current = history.head
         while current:
             status = "[BLOCKED]" if current.data.ip in blocked_ips else ""
-            output += f"{status}[{current.data.severity}] {current.data.ip} | {current.data.attack} | {time.ctime(current.data.time)}\n"
+            history_text += f"{status}[{current.data.severity}] {current.data.ip} | {current.data.attack} | {time.ctime(current.data.time)}\n"
             current = current.next
-        response["output"] = output
-    elif cmd.startswith("block "):
+        response["output"] = history_text
+    elif cmd.startswith("isolate "):
         ip = cmd.split(" ", 1)[1]
         if ip in blocked_ips:
-            response["output"] = f"IP {ip} is already blocked."
+            response["output"] = f"IP {ip} is already isolated."
         else:
             blocked_ips.add(ip)
             save_blocked_ips()
-            response["output"] = f"IP {ip} has been blocked."
-    elif cmd.startswith("unblock "):
-        ip = cmd.split(" ", 1)[1]
-        if ip in blocked_ips:
-            blocked_ips.remove(ip)
-            save_blocked_ips()
-            response["output"] = f"IP {ip} has been unblocked."
-        else:
-            response["output"] = f"IP {ip} is not blocked."
+            response["output"] = f"IP {ip} has been isolated. Admin alerted."
+            messages.append(f"[ISOLATED] Device {ip} has been isolated.")
+            messages.append(f"[ALERT] Admin alerted about suspicious activity from {ip}.")
+    elif cmd.startswith("alert "):
+        message = cmd.split(" ", 1)[1]
+        messages.append(f"[ALERT] {message}")
+        response["output"] = "Alert sent to admin."
     elif cmd == "help":
-        response["output"] = "Commands:\n  view     - View current threats\n  back     - Exit table view\n  history  - View threat history\n  block <ip>   - Block an IP\n  unblock <ip> - Unblock an IP\n  exit     - Exit the console\n"
+        response["output"] = "Commands:\n  view       - View current threats\n  history    - View threat history\n  isolate <ip> - Isolate an IP and alert admin\n  alert <msg>  - Send alert message to admin\n  block <ip>   - Block an IP\n  unblock <ip> - Unblock an IP\n"
     else:
         response["output"] = "Unknown command. Type 'help' for available commands."
 
