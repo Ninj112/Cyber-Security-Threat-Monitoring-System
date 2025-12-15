@@ -1,7 +1,5 @@
-"""
-Cyber Security Threat Monitoring System - Main Application
-A Flask-based web application for simulating and monitoring cyber threats
-"""
+# Cyber Security Threat Monitoring System - Main Application
+# A Flask-based web application for simulating and monitoring cyber threats
 from flask import Flask, render_template, request, jsonify
 import json
 import time
@@ -30,8 +28,8 @@ attack_counts = {}                 # Hash Map for attack counting
 messages = []
 
 
-def ensure_data_files():
-    """Ensure all data files and directories exist."""
+def ensure_data_files():# Ensure all data files and directories exist.
+    
     os.makedirs("data", exist_ok=True)
     
     if not os.path.exists(LOG_FILE):
@@ -44,7 +42,7 @@ def ensure_data_files():
 
 
 def load_blocked_ips():
-    """Load blocked IPs from file."""
+    # Load blocked IPs from file.
     try:
         with open(BLOCKED_FILE, "r") as f:
             data = json.load(f)
@@ -57,7 +55,7 @@ def load_blocked_ips():
 
 
 def save_blocked_ips():
-    """Save blocked IPs to file."""
+    # Save blocked IPs to file.
     try:
         with open(BLOCKED_FILE, "w") as f:
             json.dump(list(blocked_ips), f, indent=2)
@@ -66,7 +64,7 @@ def save_blocked_ips():
 
 
 def load_new_attacks():
-    """Load new attacks from the log file and add them to the queue."""
+    # Load new attacks from the log file and add them to the queue.
     try:
         with open(LOG_FILE, "r") as f:
             attacks = json.load(f)
@@ -114,25 +112,25 @@ load_blocked_ips()
 
 @app.route('/')
 def index():
-    """Render the main page."""
+    # Render the main page.
     return render_template('index.html')
 
 
 @app.route('/attacker')
 def attacker():
-    """Render the attacker console."""
+    # Render the attacker console.
     return render_template('attacker.html')
 
 
 @app.route('/defender')
 def defender():
-    """Render the defender console."""
+    # Render the defender console.
     return render_template('defender.html')
 
 
 @app.route('/attack', methods=['POST'])
 def attack():
-    """Handle attack requests from the attacker console."""
+    # Handle attack requests from the attacker console.
     data = request.json
     ip = data.get('ip', '').strip()
     attack_type = data.get('attack', '').strip()
@@ -197,7 +195,7 @@ def attack():
 
 @app.route('/threats')
 def threats():
-    """Get all current threats."""
+    # Get all current threats.
     load_new_attacks()
     threats_list = []
     for threat in queue.all():
@@ -218,7 +216,7 @@ def threats():
 
 @app.route('/defender_command', methods=['POST'])
 def defender_command():
-    """Handle commands from the defender console."""
+    # Handle commands from the defender console.
     data = request.json
     cmd = data.get('command', '').strip().lower()
     response = {"output": "", "show_table": False, "threats": []}

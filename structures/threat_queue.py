@@ -1,4 +1,5 @@
 import heapq
+# Threat Queue implementation for managing cybersecurity threats based on severity and time of detection.
 
 PRIORITY = {"HIGH": 1, "MEDIUM": 2, "LOW": 3}
 
