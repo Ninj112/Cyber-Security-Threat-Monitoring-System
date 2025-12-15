@@ -16,6 +16,7 @@ LOG_FILE = "data/attack_log.json"
 THREAT_FILE = "data/threats.txt"
 BLOCKED_FILE = "data/blocked_ips.json"
 THRESHOLD = 3  # Number of attacks before auto-blocking
+MAX_LOG_SIZE = 1000  # Maximum number of attacks to keep in memory
 
 # Initialize data structures
 threat_map = load_threats(THREAT_FILE)
@@ -140,6 +141,13 @@ def attack():
         return jsonify({
             "status": "error",
             "message": "IP address and attack type are required"
+        })
+    
+    # Basic IP format validation
+    if not all(part.isdigit() and 0 <= int(part) <= 255 for part in ip.split('.') if part) and '.' in ip:
+        return jsonify({
+            "status": "error",
+            "message": "Invalid IP address format"
         })
 
     # Check if attack type is known
@@ -284,9 +292,15 @@ def defender_command():
         for threat in queue.all():
             severity_counts[threat.severity] = severity_counts.get(threat.severity, 0) + 1
         
+        # Calculate unique IPs
+        unique_ips = len(attack_counts)
+        avg_attacks = sum(attack_counts.values()) / unique_ips if unique_ips > 0 else 0
+        
         stats_output = f"""=== THREAT STATISTICS ===
 Total Threats: {queue.size()}
+Unique Attackers: {unique_ips}
 Blocked IPs: {len(blocked_ips)}
+Average Attacks/IP: {avg_attacks:.2f}
 
 Severity Breakdown:
   HIGH:   {severity_counts['HIGH']} threats
@@ -312,11 +326,17 @@ Recent Activity: {len(messages)} events logged
     elif cmd.startswith("recent"):
         # Show recent attacks from linked list
         parts = cmd.split()
-        n = int(parts[1]) if len(parts) > 1 else 10
+        try:
+            n = int(parts[1]) if len(parts) > 1 else 10
+            n = max(1, min(n, 100))  # Limit between 1-100
+        except ValueError:
+            response["output"] = "Invalid number. Usage: recent [number]"
+            return jsonify(response)
+        
         recent = threat_history.get_recent(n)
         if recent:
             response["output"] = "=== RECENT ATTACKS ===\n" + "\n".join([
-                f"  {i+1}. {a['attack']} from {a['ip']} [{a['severity']}]"
+                f"  {i+1}. {a['attack']} from {a['ip']} [{a['severity']}] - {time.ctime(a['time'])}"
                 for i, a in enumerate(recent)
             ])
         else:
@@ -373,6 +393,13 @@ def status():
         "messages_count": len(messages),
         "attack_types": len(threat_map)
     })
+
+
+@app.route('/favicon.ico')
+def favicon():
+    # Return 204 No Content for favicon requests to avoid 404 errors
+    from flask import make_response
+    return make_response('', 204)
 
 
 if __name__ == '__main__':
