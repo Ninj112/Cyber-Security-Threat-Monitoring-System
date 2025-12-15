@@ -86,7 +86,7 @@ body {
 }
 
 #attacker-input:focus, #defender-input:focus {
-    animation: blink 1s infinite;
+    /* animation: blink 1s infinite; */
 }
 
 @keyframes blink {

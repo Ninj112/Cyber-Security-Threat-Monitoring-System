@@ -3,6 +3,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const defenderOutput = document.getElementById('defender-output');
     const threatsTableContainer = document.getElementById('threats-table-container');
     const threatsTbody = document.getElementById('threats-tbody');
+    const threatsTable = document.getElementById('threats-table');
+
+    let sortKey = 'time';
+    let sortDirection = 'desc'; // desc for newest first
 
     // Function to append to defender output
     function appendDefender(text) {
@@ -22,8 +26,24 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     typeWriter();
 
+    // Function to sort threats
+    function sortThreats(threats) {
+        return threats.sort((a, b) => {
+            let aVal = a[sortKey];
+            let bVal = b[sortKey];
+            if (sortKey === 'time') {
+                aVal = new Date(aVal);
+                bVal = new Date(bVal);
+            }
+            if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+            if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+            return 0;
+        });
+    }
+
     // Function to update threats table
     function updateThreatsTable(threats) {
+        threats = sortThreats(threats);
         threatsTbody.innerHTML = '';
         threats.forEach(t => {
             const row = document.createElement('tr');
@@ -37,6 +57,36 @@ document.addEventListener('DOMContentLoaded', function() {
             threatsTbody.appendChild(row);
         });
     }
+
+    // Add sorting to table headers
+    const headers = threatsTable.querySelectorAll('th');
+    headers.forEach((header, index) => {
+        header.style.cursor = 'pointer';
+        header.addEventListener('click', () => {
+            const keys = ['status', 'severity', 'ip', 'attack', 'time'];
+            const key = keys[index];
+            if (sortKey === key) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortKey = key;
+                sortDirection = 'asc';
+            }
+            // Re-fetch and update table
+            fetch('/defender_command', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ command: 'view' }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.show_table) {
+                    updateThreatsTable(data.threats);
+                }
+            });
+        });
+    });
 
     // Handle defender input
     defenderInput.addEventListener('keypress', function(e) {

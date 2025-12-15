@@ -1,4 +1,5 @@
 DoS,HIGH
+DDOS,HIGH
 SQL Injection,HIGH
 Remote Code Execution,CRITICAL
 Port Scan,LOW
