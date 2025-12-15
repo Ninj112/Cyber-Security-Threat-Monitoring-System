@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Defender Console</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="terminal" id="defender-terminal">
+            <div class="terminal-header">DEFENDER TERMINAL</div>
+            <div class="terminal-body">
+                <div id="defender-output" class="output">
+                    > Defender Monitoring Console<br>
+                    > Type 'help' for commands<br>
+                </div>
+                <div id="threats-table-container" style="display: none;">
+                    <table id="threats-table">
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Severity</th>
+                                <th>IP</th>
+                                <th>Attack</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="threats-tbody">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="input-line">
+                    <span class="prompt">defender&gt;</span>
+                    <input type="text" id="defender-input" autofocus>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='defender.js') }}"></script>
+</body>
+</html>

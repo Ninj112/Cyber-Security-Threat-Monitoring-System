@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attacker Console</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="terminal" id="attacker-terminal">
+            <div class="terminal-header">ATTACKER TERMINAL</div>
+            <div class="terminal-body">
+                <div id="attacker-output" class="output">
+                    > Cyber Attack Console v1.0<br>
+                    > Type 'help' for commands<br>
+                </div>
+                <div class="input-line">
+                    <span class="prompt">&gt;</span>
+                    <input type="text" id="attacker-input" autofocus>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='attacker.js') }}"></script>
+</body>
+</html>

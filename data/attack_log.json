@@ -208,5 +208,11 @@
     "attack": "SQL Injection",
     "severity": "HIGH",
     "time": 1765796686.8314579
+  },
+  {
+    "ip": "192.168.00.00",
+    "attack": "DDOS",
+    "severity": "LOW",
+    "time": 1765798841.2435288
   }
 ]

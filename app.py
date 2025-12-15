@@ -68,6 +68,14 @@ load_blocked_ips()
 def index():
     return render_template('index.html')
 
+@app.route('/attacker')
+def attacker():
+    return render_template('attacker.html')
+
+@app.route('/defender')
+def defender():
+    return render_template('defender.html')
+
 @app.route('/attack', methods=['POST'])
 def attack():
     data = request.json
