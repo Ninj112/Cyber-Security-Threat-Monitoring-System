@@ -180,7 +180,7 @@ class AttackSeverityTracker:
 
         critical_threat = self.threat_queue[0]
         return (
-            f"🚨 ALERT: {critical_threat.attack} detected from {critical_threat.ip} "
+            f"ALERT: {critical_threat.attack} detected from {critical_threat.ip} "
             f"(Severity: {critical_threat.severity})"
         )
 

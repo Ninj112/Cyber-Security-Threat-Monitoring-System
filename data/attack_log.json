@@ -16,5 +16,17 @@
     "attack": "DoS",
     "severity": "HIGH",
     "time": 1765800796.3801856
+  },
+  {
+    "ip": "192.168..",
+    "attack": "DDOS",
+    "severity": "HIGH",
+    "time": 1765804636.2604818
+  },
+  {
+    "ip": "192.168.9.9",
+    "attack": "DDOS",
+    "severity": "HIGH",
+    "time": 1765808696.4446216
   }
 ]
