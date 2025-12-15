@@ -1,8 +1,22 @@
-DoS,HIGH
-DDOS,HIGH
 SQL Injection,HIGH
-Remote Code Execution,CRITICAL
-Port Scan,LOW
+Remote Code Execution,HIGH
+Privilege Escalation,HIGH
+Ransomware Attempt,HIGH
+Zero-Day Exploit,HIGH
+Data Exfiltration,HIGH
+Command Injection,HIGH
+
 Brute Force Login,MEDIUM
-Malware Download,HIGH
+DDOS Attempt,MEDIUM
+Cross-Site Scripting (XSS),MEDIUM
+Malware Download,MEDIUM
+Unauthorized API Access,MEDIUM
+Credential Stuffing,MEDIUM
+Suspicious File Upload,MEDIUM
+
+Port Scan,LOW
+Ping Sweep,LOW
+Banner Grabbing,LOW
+Directory Enumeration,LOW
+Suspicious Login Attempt,LOW
 Unknown Traffic Pattern,LOW
