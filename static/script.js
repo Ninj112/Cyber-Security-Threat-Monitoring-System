@@ -1,7 +1,10 @@
 document.addEventListener('DOMContentLoaded', function() {
     const attackerInput = document.getElementById('attacker-input');
     const attackerOutput = document.getElementById('attacker-output');
+    const defenderInput = document.getElementById('defender-input');
     const defenderOutput = document.getElementById('defender-output');
+    const threatsTableContainer = document.getElementById('threats-table-container');
+    const threatsTbody = document.getElementById('threats-tbody');
 
     let lastThreats = [];
     let lastMessages = [];
@@ -12,17 +15,25 @@ document.addEventListener('DOMContentLoaded', function() {
         attackerOutput.scrollTop = attackerOutput.scrollHeight;
     }
 
-    // Function to update defender output
-    function updateDefender(threats, messages) {
-        let output = '> Defender Monitoring Console<br>> Waiting for threats...<br>';
-        threats.forEach(t => {
-            output += `[${t.severity}] ${t.ip} | ${t.attack}<br>`;
-        });
-        messages.forEach(m => {
-            output += m + '<br>';
-        });
-        defenderOutput.innerHTML = output;
+    // Function to append to defender output
+    function appendDefender(text) {
+        defenderOutput.innerHTML += text + '<br>';
         defenderOutput.scrollTop = defenderOutput.scrollHeight;
+    }
+
+    // Function to update threats table
+    function updateThreatsTable(threats) {
+        threatsTbody.innerHTML = '';
+        threats.forEach(t => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${t.status}</td>
+                <td>${t.severity}</td>
+                <td>${t.ip}</td>
+                <td>${t.attack}</td>
+            `;
+            threatsTbody.appendChild(row);
+        });
     }
 
     // Handle attacker input
@@ -70,18 +81,52 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Poll for threats
+    // Handle defender input
+    defenderInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            const cmd = defenderInput.value.trim();
+            defenderInput.value = '';
+            appendDefender(`defender> ${cmd}`);
+
+            fetch('/defender_command', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ command: cmd }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.show_table) {
+                    updateThreatsTable(data.threats);
+                    threatsTableContainer.style.display = 'block';
+                    defenderOutput.style.display = 'none';
+                } else {
+                    threatsTableContainer.style.display = 'none';
+                    defenderOutput.style.display = 'block';
+                    appendDefender(data.output);
+                }
+                defenderInput.focus();
+            });
+        }
+    });
+
+    // Poll for threats (update table if visible)
     setInterval(() => {
-        fetch('/threats')
-        .then(response => response.json())
-        .then(data => {
-            const threats = data.threats;
-            const messages = data.messages;
-            if (JSON.stringify(threats) !== JSON.stringify(lastThreats) || JSON.stringify(messages) !== JSON.stringify(lastMessages)) {
-                updateDefender(threats, messages);
-                lastThreats = threats;
-                lastMessages = messages;
-            }
-        });
+        if (threatsTableContainer.style.display === 'block') {
+            fetch('/defender_command', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ command: 'view' }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.show_table) {
+                    updateThreatsTable(data.threats);
+                }
+            });
+        }
     }, 1000);
 });

@@ -65,3 +65,19 @@ body {
     outline: none;
     flex: 1;
 }
+
+#defender-input {
+    background-color: #000;
+    border: none;
+    color: #00ff00;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    outline: none;
+    flex: 1;
+}
+
+#threats-table-container {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 10px;
+}

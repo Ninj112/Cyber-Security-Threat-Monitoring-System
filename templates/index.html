@@ -26,7 +26,25 @@
             <div class="terminal-body">
                 <div id="defender-output" class="output">
                     > Defender Monitoring Console<br>
-                    > Waiting for threats...<br>
+                    > Type 'help' for commands<br>
+                </div>
+                <div id="threats-table-container" style="display: none;">
+                    <table id="threats-table">
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Severity</th>
+                                <th>IP</th>
+                                <th>Attack</th>
+                            </tr>
+                        </thead>
+                        <tbody id="threats-tbody">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="input-line">
+                    <span class="prompt">defender&gt;</span>
+                    <input type="text" id="defender-input" autofocus>
                 </div>
             </div>
         </div>

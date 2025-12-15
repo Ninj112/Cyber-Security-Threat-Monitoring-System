@@ -190,5 +190,17 @@
     "attack": "SQL Injection",
     "severity": "HIGH",
     "time": 1765794784.2938204
+  },
+  {
+    "ip": "192.120.122.240",
+    "attack": "DDOS",
+    "severity": "LOW",
+    "time": 1765795937.828956
+  },
+  {
+    "ip": "192.120.122.240",
+    "attack": "DDOS",
+    "severity": "LOW",
+    "time": 1765795985.3955252
   }
 ]
