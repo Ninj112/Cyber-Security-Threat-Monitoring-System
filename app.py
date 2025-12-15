@@ -1,179 +1,339 @@
+"""
+Cyber Security Threat Monitoring System - Main Application
+A Flask-based web application for simulating and monitoring cyber threats
+"""
 from flask import Flask, render_template, request, jsonify
 import json
 import time
+import os
 from structures.threat_queue import ThreatQueue, Threat
 from structures.linked_list import ThreatLinkedList
 from utils.loader import load_threats
 
 app = Flask(__name__)
 
+# Configuration
 LOG_FILE = "data/attack_log.json"
 THREAT_FILE = "data/threats.txt"
 BLOCKED_FILE = "data/blocked_ips.json"
+THRESHOLD = 3  # Number of attacks before auto-blocking
 
+# Initialize data structures
 threat_map = load_threats(THREAT_FILE)
 queue = ThreatQueue()
+threat_history = ThreatLinkedList()
 seen = set()
 blocked_ips = set()
 attack_counts = {}
 messages = []
 
-THRESHOLD = 3  # Number of attacks before blocking
+
+def ensure_data_files():
+    """Ensure all data files and directories exist."""
+    os.makedirs("data", exist_ok=True)
+    
+    if not os.path.exists(LOG_FILE):
+        with open(LOG_FILE, "w") as f:
+            json.dump([], f)
+    
+    if not os.path.exists(BLOCKED_FILE):
+        with open(BLOCKED_FILE, "w") as f:
+            json.dump([], f)
+
 
 def load_blocked_ips():
+    """Load blocked IPs from file."""
     try:
-        with open(BLOCKED_FILE) as f:
+        with open(BLOCKED_FILE, "r") as f:
             data = json.load(f)
             blocked_ips.update(data)
-    except:
-        pass
+            print(f"Loaded {len(blocked_ips)} blocked IPs")
+    except FileNotFoundError:
+        print("No blocked IPs file found, starting fresh")
+    except Exception as e:
+        print(f"Error loading blocked IPs: {e}")
+
 
 def save_blocked_ips():
-    with open(BLOCKED_FILE, "w") as f:
-        json.dump(list(blocked_ips), f)
+    """Save blocked IPs to file."""
+    try:
+        with open(BLOCKED_FILE, "w") as f:
+            json.dump(list(blocked_ips), f, indent=2)
+    except Exception as e:
+        print(f"Error saving blocked IPs: {e}")
+
 
 def load_new_attacks():
+    """Load new attacks from the log file and add them to the queue."""
     try:
-        with open(LOG_FILE) as f:
+        with open(LOG_FILE, "r") as f:
             attacks = json.load(f)
-    except:
+    except FileNotFoundError:
+        return
+    except Exception as e:
+        print(f"Error loading attacks: {e}")
         return
 
-    for a in attacks:
-        key = (a["ip"], a["time"])
+    for attack_data in attacks:
+        key = (attack_data["ip"], attack_data["time"])
         if key not in seen:
             seen.add(key)
-            threat = Threat(**a)
+            threat = Threat(
+                ip=attack_data["ip"],
+                attack=attack_data["attack"],
+                severity=attack_data["severity"],
+                time=attack_data["time"]
+            )
             queue.push(threat)
+            threat_history.add(attack_data)
 
             # Count attacks per IP
-            ip = a["ip"]
-            if ip not in attack_counts:
-                attack_counts[ip] = 0
-            attack_counts[ip] += 1
+            ip = attack_data["ip"]
+            attack_counts[ip] = attack_counts.get(ip, 0) + 1
 
-            # Check if should block
+            # Auto-block after threshold
             if attack_counts[ip] >= THRESHOLD and ip not in blocked_ips:
                 blocked_ips.add(ip)
                 save_blocked_ips()
-                messages.append(f"[BLOCKED] IP {ip} has been blocked due to multiple attacks.")
-                messages.append(f"[ISOLATED] Device {ip} has been isolated.")
-                messages.append(f"[ALERT] Admin alerted about suspicious activity from {ip}.")
+                messages.append(f"[AUTO-BLOCK] IP {ip} blocked after {attack_counts[ip]} attacks")
+                messages.append(f"[ISOLATED] Device {ip} has been isolated from the network")
+                messages.append(f"[ALERT] Security admin notified about IP {ip}")
 
+
+# Initialize on startup
+ensure_data_files()
 load_blocked_ips()
+
 
 @app.route('/')
 def index():
+    """Render the main page."""
     return render_template('index.html')
+
 
 @app.route('/attacker')
 def attacker():
+    """Render the attacker console."""
     return render_template('attacker.html')
+
 
 @app.route('/defender')
 def defender():
+    """Render the defender console."""
     return render_template('defender.html')
+
 
 @app.route('/attack', methods=['POST'])
 def attack():
+    """Handle attack requests from the attacker console."""
     data = request.json
-    ip = data.get('ip')
-    attack_type = data.get('attack')
-    if ip and attack_type:
-        if attack_type not in threat_map:
-            return jsonify({"status": "error", "message": "Unknown attack type."})
-        if ip in blocked_ips:
-            return jsonify({"status": "blocked", "message": f"IP {ip} is blocked."})
+    ip = data.get('ip', '').strip()
+    attack_type = data.get('attack', '').strip()
 
-        entry = {
-            "ip": ip,
-            "attack": attack_type,
-            "severity": threat_map.get(attack_type, "LOW"),
-            "time": time.time()
-        }
+    # Validation
+    if not ip or not attack_type:
+        return jsonify({
+            "status": "error",
+            "message": "IP address and attack type are required"
+        })
 
-        try:
-            with open(LOG_FILE, "r") as f:
-                log_data = json.load(f)
-        except:
-            log_data = []
+    # Check if attack type is known
+    if attack_type not in threat_map:
+        return jsonify({
+            "status": "error",
+            "message": f"Unknown attack type: {attack_type}"
+        })
 
-        log_data.append(entry)
+    # Check if IP is blocked
+    if ip in blocked_ips:
+        return jsonify({
+            "status": "blocked",
+            "message": f"IP {ip} is currently blocked and cannot execute attacks"
+        })
 
+    # Create attack entry
+    severity = threat_map[attack_type]
+    entry = {
+        "ip": ip,
+        "attack": attack_type,
+        "severity": severity,
+        "time": time.time()
+    }
+
+    # Save to log file
+    try:
+        with open(LOG_FILE, "r") as f:
+            log_data = json.load(f)
+    except:
+        log_data = []
+
+    log_data.append(entry)
+
+    try:
         with open(LOG_FILE, "w") as f:
             json.dump(log_data, f, indent=2)
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"Failed to log attack: {str(e)}"
+        })
 
-        return jsonify({"status": "success"})
-    return jsonify({"status": "error"})
+    return jsonify({
+        "status": "success",
+        "message": f"Attack '{attack_type}' from {ip} logged successfully",
+        "severity": severity
+    })
+
 
 @app.route('/threats')
 def threats():
+    """Get all current threats."""
     load_new_attacks()
     threats_list = []
-    for t in queue.all():
+    for threat in queue.all():
         threats_list.append({
-            "ip": t.ip,
-            "attack": t.attack,
-            "severity": t.severity
+            "ip": threat.ip,
+            "attack": threat.attack,
+            "severity": threat.severity,
+            "time": threat.time,
+            "blocked": threat.ip in blocked_ips
         })
-    return jsonify({"threats": threats_list, "messages": messages})
+    
+    return jsonify({
+        "threats": threats_list,
+        "messages": messages[-10:],  # Last 10 messages
+        "blocked_count": len(blocked_ips)
+    })
+
 
 @app.route('/defender_command', methods=['POST'])
 def defender_command():
+    """Handle commands from the defender console."""
     data = request.json
     cmd = data.get('command', '').strip().lower()
     response = {"output": "", "show_table": False, "threats": []}
 
     if cmd == "view":
+        # Load latest attacks and display them
         load_new_attacks()
         threats_list = []
-        for t in queue.all():
-            status = "Blocked" if t.ip in blocked_ips else "Active"
+        for threat in queue.all():
+            status = "Blocked" if threat.ip in blocked_ips else "Active"
             threats_list.append({
                 "status": status,
-                "severity": t.severity,
-                "ip": t.ip,
-                "attack": t.attack,
-                "time": time.ctime(t.time)
+                "severity": threat.severity,
+                "ip": threat.ip,
+                "attack": threat.attack,
+                "time": time.ctime(threat.time)
             })
         response["show_table"] = True
         response["threats"] = threats_list
+        
     elif cmd.startswith("isolate "):
-        ip = cmd.split(" ", 1)[1]
+        # Isolate an IP address
+        ip = cmd.split(" ", 1)[1].strip()
         if ip in blocked_ips:
-            response["output"] = f"IP {ip} is already isolated."
+            response["output"] = f"IP {ip} is already isolated"
         else:
             blocked_ips.add(ip)
             save_blocked_ips()
-            response["output"] = f"IP {ip} has been isolated. Admin alerted."
-            messages.append(f"[ISOLATED] Device {ip} has been isolated.")
-            messages.append(f"[ALERT] Admin alerted about suspicious activity from {ip}.")
+            response["output"] = f"✓ IP {ip} has been isolated\n✓ Device removed from network\n✓ Admin notification sent"
+            messages.append(f"[MANUAL-ISOLATE] {ip} isolated by defender")
+            
     elif cmd.startswith("alert "):
-        message = cmd.split(" ", 1)[1]
-        messages.append(f"[ALERT] {message}")
-        response["output"] = "Alert sent to admin."
+        # Send alert message
+        message = cmd.split(" ", 1)[1].strip()
+        messages.append(f"[ADMIN-ALERT] {message}")
+        response["output"] = f"✓ Alert sent to security team:\n  '{message}'"
+        
     elif cmd.startswith("block "):
-        ip = cmd.split(" ", 1)[1]
+        # Block an IP address
+        ip = cmd.split(" ", 1)[1].strip()
         if ip in blocked_ips:
-            response["output"] = f"IP {ip} is already blocked."
+            response["output"] = f"IP {ip} is already blocked"
         else:
             blocked_ips.add(ip)
             save_blocked_ips()
-            response["output"] = f"IP {ip} has been blocked."
+            response["output"] = f"✓ IP {ip} has been blocked"
+            messages.append(f"[MANUAL-BLOCK] {ip} blocked by defender")
+            
     elif cmd.startswith("unblock "):
-        ip = cmd.split(" ", 1)[1]
+        # Unblock an IP address
+        ip = cmd.split(" ", 1)[1].strip()
         if ip not in blocked_ips:
-            response["output"] = f"IP {ip} is not blocked."
+            response["output"] = f"IP {ip} is not currently blocked"
         else:
             blocked_ips.remove(ip)
             save_blocked_ips()
-            response["output"] = f"IP {ip} has been unblocked."
+            attack_counts[ip] = 0  # Reset count
+            response["output"] = f"✓ IP {ip} has been unblocked"
+            messages.append(f"[UNBLOCK] {ip} unblocked by defender")
+            
+    elif cmd == "stats":
+        # Show statistics
+        load_new_attacks()
+        severity_counts = {"HIGH": 0, "MEDIUM": 0, "LOW": 0}
+        for threat in queue.all():
+            severity_counts[threat.severity] = severity_counts.get(threat.severity, 0) + 1
+        
+        stats_output = f"""=== THREAT STATISTICS ===
+Total Threats: {queue.size()}
+Blocked IPs: {len(blocked_ips)}
+
+Severity Breakdown:
+  HIGH:   {severity_counts['HIGH']} threats
+  MEDIUM: {severity_counts['MEDIUM']} threats
+  LOW:    {severity_counts['LOW']} threats
+
+Recent Activity: {len(messages)} events logged
+"""
+        response["output"] = stats_output
+        
+    elif cmd == "blocked":
+        # List all blocked IPs
+        if blocked_ips:
+            response["output"] = "=== BLOCKED IPs ===\n" + "\n".join(f"  • {ip}" for ip in sorted(blocked_ips))
+        else:
+            response["output"] = "No IPs are currently blocked"
+            
+    elif cmd == "clear":
+        # Clear message log
+        messages.clear()
+        response["output"] = "✓ Message log cleared"
+        
     elif cmd == "help":
-        response["output"] = "Commands:\n  view       - View current threats\n  isolate <ip> - Isolate an IP and alert admin\n  alert <msg>  - Send alert message to admin\n  block <ip>   - Block an IP\n  unblock <ip> - Unblock an IP\n"
+        # Show help
+        response["output"] = """=== DEFENDER COMMANDS ===
+  view            - View all current threats in table
+  stats           - Show threat statistics
+  blocked         - List all blocked IPs
+  isolate <ip>    - Isolate a device from network
+  block <ip>      - Block an IP address
+  unblock <ip>    - Unblock an IP address
+  alert <message> - Send alert to security team
+  clear           - Clear message log
+  help            - Show this help message
+"""
     else:
-        response["output"] = "Unknown command. Type 'help' for available commands."
+        response["output"] = f"Unknown command: '{cmd}'\nType 'help' for available commands"
 
     return jsonify(response)
 
+
+@app.route('/status')
+def status():
+    """Get system status."""
+    load_new_attacks()
+    return jsonify({
+        "total_threats": queue.size(),
+        "blocked_ips": len(blocked_ips),
+        "messages_count": len(messages),
+        "attack_types": len(threat_map)
+    })
+
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    print("Starting Cyber Security Threat Monitoring System...")
+    print(f"Loaded {len(threat_map)} attack types")
+    print(f"Auto-block threshold: {THRESHOLD} attacks")
+    app.run(debug=True, host='127.0.0.1', port=5000)

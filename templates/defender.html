@@ -3,27 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Defender Console</title>
+    <title>Defender Console - Cyber Security Threat Monitoring</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="container">
         <div class="terminal" id="defender-terminal">
-            <div class="terminal-header">DEFENDER TERMINAL</div>
+            <div class="terminal-header">
+                <span class="terminal-title">🛡️ DEFENDER CONSOLE</span>
+                <a href="/" class="back-link">← Back to Home</a>
+            </div>
             <div class="terminal-body">
                 <div id="defender-output" class="output">
-                    Welcome to Defender Monitoring Console<br>
-                    Type 'help' for commands<br>
+                    <span class="boot-text">Initializing Defense Systems...</span><br>
+                    <span class="boot-text">Loading threat database...</span><br>
+                    <span class="success-text">Monitoring active.</span><br><br>
+                    <span class="info-text">Type 'help' for available commands</span><br>
                 </div>
                 <div id="threats-table-container" style="display: none;">
                     <table id="threats-table">
                         <thead>
                             <tr>
-                                <th>Status</th>
-                                <th>Severity</th>
-                                <th>IP</th>
-                                <th>Attack</th>
-                                <th>Time</th>
+                                <th data-sort="status">Status</th>
+                                <th data-sort="severity">Severity</th>
+                                <th data-sort="ip">IP Address</th>
+                                <th data-sort="attack">Attack Type</th>
+                                <th data-sort="time">Timestamp</th>
                             </tr>
                         </thead>
                         <tbody id="threats-tbody">
@@ -31,8 +36,8 @@
                     </table>
                 </div>
                 <div class="input-line">
-                    <span class="prompt">defender&gt;</span>
-                    <input type="text" id="defender-input" autofocus>
+                    <span class="prompt">defender@system:~$</span>
+                    <input type="text" id="defender-input" autofocus autocomplete="off">
                 </div>
             </div>
         </div>

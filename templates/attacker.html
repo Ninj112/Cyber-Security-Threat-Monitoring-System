@@ -3,21 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attacker Console</title>
+    <title>Attacker Console - Cyber Security Threat Monitoring</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="container">
         <div class="terminal" id="attacker-terminal">
-            <div class="terminal-header">ATTACKER TERMINAL</div>
+            <div class="terminal-header">
+                <span class="terminal-title">⚔️ ATTACKER CONSOLE</span>
+                <a href="/" class="back-link">← Back to Home</a>
+            </div>
             <div class="terminal-body">
                 <div id="attacker-output" class="output">
-                    Welcome to Cyber Attack Console v1.0<br>
-                    Type 'help' for commands<br>
+                    <span class="boot-text">Initializing Attack Console...</span><br>
+                    <span class="boot-text">Loading attack modules...</span><br>
+                    <span class="success-text">System ready.</span><br><br>
+                    <span class="info-text">Type 'help' for available commands</span><br>
                 </div>
                 <div class="input-line">
-                    <span class="prompt">&gt;</span>
-                    <input type="text" id="attacker-input" autofocus>
+                    <span class="prompt">attacker@system:~$</span>
+                    <input type="text" id="attacker-input" autofocus autocomplete="off">
                 </div>
             </div>
         </div>
