@@ -5,9 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cyber Security Threat Monitoring</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
-        a { display: inline-block; margin: 20px; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; }
-        a:hover { background: #0056b3; }
+        body {
+            background: linear-gradient(135deg, #000, #111);
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            padding: 50px;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        h1 {
+            font-size: 3em;
+            text-shadow: 0 0 20px #00ff00;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 20px #00ff00; }
+            to { text-shadow: 0 0 30px #00ff00, 0 0 40px #00ff00; }
+        }
+        p {
+            font-size: 1.2em;
+            margin-bottom: 40px;
+        }
+        a {
+            display: inline-block;
+            margin: 20px;
+            padding: 15px 30px;
+            background: linear-gradient(90deg, #333, #555);
+            color: #00ff00;
+            text-decoration: none;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px #00ff00;
+        }
+        a:hover {
+            background: linear-gradient(90deg, #555, #777);
+            box-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00;
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body>

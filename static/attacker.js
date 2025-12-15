@@ -8,6 +8,18 @@ document.addEventListener('DOMContentLoaded', function() {
         attackerOutput.scrollTop = attackerOutput.scrollHeight;
     }
 
+    // Typing effect for welcome message
+    const welcomeText = "Welcome to Cyber Attack Console v1.0\nType 'help' for commands";
+    let i = 0;
+    const typeWriter = () => {
+        if (i < welcomeText.length) {
+            attackerOutput.innerHTML = welcomeText.substring(0, i + 1).replace(/\n/g, '<br>');
+            i++;
+            setTimeout(typeWriter, 50);
+        }
+    };
+    typeWriter();
+
     // Handle attacker input
     attackerInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {

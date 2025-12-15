@@ -13,7 +13,6 @@ BLOCKED_FILE = "data/blocked_ips.json"
 
 threat_map = load_threats(THREAT_FILE)
 queue = ThreatQueue()
-history = ThreatLinkedList()
 seen = set()
 blocked_ips = set()
 attack_counts = {}
@@ -46,7 +45,6 @@ def load_new_attacks():
             seen.add(key)
             threat = Threat(**a)
             queue.push(threat)
-            history.add(threat)
 
             # Count attacks per IP
             ip = a["ip"]
@@ -138,15 +136,6 @@ def defender_command():
             })
         response["show_table"] = True
         response["threats"] = threats_list
-    elif cmd == "history":
-        load_new_attacks()
-        history_text = "Threat History:\n"
-        current = history.head
-        while current:
-            status = "[BLOCKED]" if current.data.ip in blocked_ips else ""
-            history_text += f"{status}[{current.data.severity}] {current.data.ip} | {current.data.attack} | {time.ctime(current.data.time)}\n"
-            current = current.next
-        response["output"] = history_text
     elif cmd.startswith("isolate "):
         ip = cmd.split(" ", 1)[1]
         if ip in blocked_ips:
@@ -161,8 +150,24 @@ def defender_command():
         message = cmd.split(" ", 1)[1]
         messages.append(f"[ALERT] {message}")
         response["output"] = "Alert sent to admin."
+    elif cmd.startswith("block "):
+        ip = cmd.split(" ", 1)[1]
+        if ip in blocked_ips:
+            response["output"] = f"IP {ip} is already blocked."
+        else:
+            blocked_ips.add(ip)
+            save_blocked_ips()
+            response["output"] = f"IP {ip} has been blocked."
+    elif cmd.startswith("unblock "):
+        ip = cmd.split(" ", 1)[1]
+        if ip not in blocked_ips:
+            response["output"] = f"IP {ip} is not blocked."
+        else:
+            blocked_ips.remove(ip)
+            save_blocked_ips()
+            response["output"] = f"IP {ip} has been unblocked."
     elif cmd == "help":
-        response["output"] = "Commands:\n  view       - View current threats\n  history    - View threat history\n  isolate <ip> - Isolate an IP and alert admin\n  alert <msg>  - Send alert message to admin\n  block <ip>   - Block an IP\n  unblock <ip> - Unblock an IP\n"
+        response["output"] = "Commands:\n  view       - View current threats\n  isolate <ip> - Isolate an IP and alert admin\n  alert <msg>  - Send alert message to admin\n  block <ip>   - Block an IP\n  unblock <ip> - Unblock an IP\n"
     else:
         response["output"] = "Unknown command. Type 'help' for available commands."
 

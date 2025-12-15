@@ -10,6 +10,18 @@ document.addEventListener('DOMContentLoaded', function() {
         defenderOutput.scrollTop = defenderOutput.scrollHeight;
     }
 
+    // Typing effect for welcome message
+    const welcomeText = "Welcome to Defender Monitoring Console\nType 'help' for commands";
+    let i = 0;
+    const typeWriter = () => {
+        if (i < welcomeText.length) {
+            defenderOutput.innerHTML = welcomeText.substring(0, i + 1).replace(/\n/g, '<br>');
+            i++;
+            setTimeout(typeWriter, 50);
+        }
+    };
+    typeWriter();
+
     // Function to update threats table
     function updateThreatsTable(threats) {
         threatsTbody.innerHTML = '';

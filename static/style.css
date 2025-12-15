@@ -3,41 +3,54 @@ body {
     color: #00ff00;
     font-family: 'Courier New', monospace;
     margin: 0;
-    padding: 20px;
+    padding: 0;
     display: flex;
     justify-content: center;
-    align-items: flex-start;
+    align-items: center;
     height: 100vh;
+    overflow: hidden;
 }
 
 .container {
-    display: flex;
     width: 100%;
-    max-width: 1400px;
-    gap: 20px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .terminal {
     flex: 1;
     background-color: #000;
-    border: 1px solid #00ff00;
-    border-radius: 5px;
+    border: 2px solid #00ff00;
+    border-radius: 0;
     overflow: hidden;
+    box-shadow: 0 0 20px #00ff00;
+    animation: glow 2s ease-in-out infinite alternate;
+    display: flex;
+    flex-direction: column;
+}
+
+@keyframes glow {
+    from { box-shadow: 0 0 20px #00ff00; }
+    to { box-shadow: 0 0 30px #00ff00, 0 0 40px #00ff00; }
 }
 
 .terminal-header {
-    background-color: #333;
+    background: linear-gradient(90deg, #333, #555);
     color: #00ff00;
-    padding: 10px;
+    padding: 15px;
     text-align: center;
     font-weight: bold;
+    font-size: 18px;
+    text-shadow: 0 0 10px #00ff00;
 }
 
 .terminal-body {
-    padding: 10px;
-    height: 400px;
+    padding: 15px;
+    height: calc(100% - 80px);
     display: flex;
     flex-direction: column;
+    box-sizing: border-box;
 }
 
 .output {
@@ -45,18 +58,23 @@ body {
     overflow-y: auto;
     white-space: pre-wrap;
     margin-bottom: 10px;
+    font-size: 14px;
+    line-height: 1.4;
 }
 
 .input-line {
     display: flex;
     align-items: center;
+    border-top: 1px solid #00ff00;
+    padding-top: 10px;
 }
 
 .prompt {
     margin-right: 5px;
+    color: #ffff00;
 }
 
-#attacker-input {
+#attacker-input, #defender-input {
     background-color: #000;
     border: none;
     color: #00ff00;
@@ -64,20 +82,46 @@ body {
     font-size: 14px;
     outline: none;
     flex: 1;
+    caret-color: #00ff00;
 }
 
-#defender-input {
-    background-color: #000;
-    border: none;
-    color: #00ff00;
-    font-family: 'Courier New', monospace;
-    font-size: 14px;
-    outline: none;
-    flex: 1;
+#attacker-input:focus, #defender-input:focus {
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
 }
 
 #threats-table-container {
     flex: 1;
     overflow-y: auto;
     margin-bottom: 10px;
+}
+
+#threats-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #00ff00;
+    font-size: 12px;
+}
+
+#threats-table th, #threats-table td {
+    border: 1px solid #00ff00;
+    padding: 8px;
+    text-align: left;
+}
+
+#threats-table th {
+    background-color: #333;
+    color: #ffff00;
+}
+
+#threats-table tr:nth-child(even) {
+    background-color: #111;
+}
+
+#threats-table tr:hover {
+    background-color: #222;
 }
