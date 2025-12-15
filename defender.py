@@ -1,112 +1,84 @@
-import tkinter as tk
-from tkinter import ttk, messagebox
-import heapq
+import json, time, tkinter as tk
+from structures.threat_queue import ThreatQueue, Threat
+from structures.linked_list import ThreatLinkedList
 
-# ---------------- Priority Map ----------------
-PRIORITY = {
-    "HIGH": 1,
-    "MEDIUM": 2,
-    "LOW": 3
-}
+LOG_FILE = "data/attack_log.json"
 
-# ---------------- Threat Class ----------------
-class Threat:
-    def __init__(self, ip, attack, severity):
-        self.ip = ip
-        self.attack = attack
-        self.severity = severity
-        self.priority = PRIORITY[severity]
+queue = ThreatQueue()
+history = ThreatLinkedList()
+seen = set()
 
-    def __lt__(self, other):
-        return self.priority < other.priority
+def load_new_attacks():
+    try:
+        with open(LOG_FILE) as f:
+            attacks = json.load(f)
+    except:
+        return
 
+    for a in attacks:
+        key = (a["ip"], a["time"])
+        if key not in seen:
+            seen.add(key)
+            threat = Threat(**a)
+            queue.push(threat)
+            history.add(threat)
 
-# ---------------- Defender GUI ----------------
-class DefenderGUI:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Cybersecurity Defender")
-        self.root.geometry("650x500")
+def refresh():
+    load_new_attacks()
+    table.delete(*table.get_children())
+    for t in queue.all():
+        table.insert("", "end", values=(t.ip, t.attack, t.severity))
+    root.after(1000, refresh)
 
-        self.queue = []
+# ---------- GUI ----------
+root = tk.Tk()
+root.title("DEFENDER TERMINAL")
+root.geometry("800x450")
+root.configure(bg="black")
 
-        # Title
-        tk.Label(root, text="Incoming Threats", font=("Arial", 16, "bold")).pack(pady=10)
+FONT = ("Courier New", 11)
+FG = "#00ff00"
 
-        # Table
-        self.table = ttk.Treeview(
-            root, columns=("IP", "Attack", "Severity"), show="headings"
-        )
+terminal = tk.Text(
+    root,
+    bg="black",
+    fg=FG,
+    insertbackground=FG,
+    font=FONT,
+    state="disabled"
+)
+terminal.pack(fill=tk.BOTH, expand=True)
 
-        self.table.heading("IP", text="IP Address")
-        self.table.heading("Attack", text="Attack Type")
-        self.table.heading("Severity", text="Severity")
+# ---------- Functions ----------
+def write(text):
+    terminal.config(state="normal")
+    terminal.insert(tk.END, text + "\n")
+    terminal.see(tk.END)
+    terminal.config(state="disabled")
 
-        self.table.column("IP", width=200)
-        self.table.column("Attack", width=220)
-        self.table.column("Severity", width=120)
+def load_attacks():
+    try:
+        with open(LOG_FILE) as f:
+            attacks = json.load(f)
+    except:
+        return
 
-        self.table.pack(pady=10)
+    for a in attacks:
+        key = (a["ip"], a["time"])
+        if key not in seen:
+            seen.add(key)
+            threat = Threat(a["ip"], a["attack"], a["severity"], a["time"])
+            queue.push(threat)
+            history.add(threat)
+            write(f"[{threat.severity}] {threat.ip} | {threat.attack}")
 
-        # Add threat button
-        tk.Button(root, text="Receive Test Threat", command=self.add_threat).pack(pady=5)
+def refresh():
+    load_attacks()
+    root.after(1000, refresh)
 
-        # Action label
-        tk.Label(root, text="Choose Action", font=("Arial", 12)).pack(pady=10)
+# ---------- Boot ----------
+write("> Defender Monitoring Console")
+write("> Waiting for threats...\n")
 
-        # Action buttons (ALL FOUR)
-        tk.Button(root, text="Block IP", width=18,
-                  command=lambda: self.handle("Blocked IP")).pack(pady=3)
-
-        tk.Button(root, text="Alert Admin", width=18,
-                  command=lambda: self.handle("Admin Alerted")).pack(pady=3)
-
-        tk.Button(root, text="Isolate Host", width=18,
-                  command=lambda: self.handle("Host Isolated")).pack(pady=3)
-
-        tk.Button(root, text="Ignore", width=18,
-                  command=lambda: self.handle("Ignored")).pack(pady=3)
-
-    # ---------------- Add Threat ----------------
-    def add_threat(self):
-        threats = [
-            Threat("10.0.0.5", "SQL Injection", "HIGH"),
-            Threat("172.16.1.20", "Brute Force Login", "MEDIUM"),
-            Threat("196.251.100.12", "Port Scan", "LOW")
-        ]
-
-        heapq.heappush(self.queue, threats[len(self.queue) % 3])
-        self.refresh()
-
-    # ---------------- Refresh Table ----------------
-    def refresh(self):
-        self.table.delete(*self.table.get_children())
-        for t in sorted(self.queue):
-            self.table.insert("", "end", values=(t.ip, t.attack, t.severity))
-
-    # ---------------- Handle Threat ----------------
-    def handle(self, action):
-        selected = self.table.selection()
-
-        if not selected:
-            messagebox.showwarning("Warning", "Please select a threat first.")
-            return
-
-        ip = self.table.item(selected[0])["values"][0]
-
-        for t in self.queue:
-            if t.ip == ip:
-                self.queue.remove(t)
-                heapq.heapify(self.queue)
-                break
-
-        self.refresh()
-
-        messagebox.showinfo("Handled", f"{action}\nIP: {ip}")
-
-
-# ---------------- Run App ----------------
-if __name__ == "__main__":
-    root = tk.Tk()
-    app = DefenderGUI(root)
-    root.mainloop()
+refresh()
+root.mainloop()

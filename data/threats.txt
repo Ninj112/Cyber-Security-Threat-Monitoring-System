@@ -1,0 +1,7 @@
+DoS,HIGH
+SQL Injection,HIGH
+Remote Code Execution,CRITICAL
+Port Scan,LOW
+Brute Force Login,MEDIUM
+Malware Download,HIGH
+Unknown Traffic Pattern,LOW

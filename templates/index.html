@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Security Threat Monitoring</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="terminal" id="attacker-terminal">
+            <div class="terminal-header">ATTACKER TERMINAL</div>
+            <div class="terminal-body">
+                <div id="attacker-output" class="output">
+                    > Cyber Attack Console v1.0<br>
+                    > Type 'help' for commands<br>
+                </div>
+                <div class="input-line">
+                    <span class="prompt">&gt;</span>
+                    <input type="text" id="attacker-input" autofocus>
+                </div>
+            </div>
+        </div>
+        <div class="terminal" id="defender-terminal">
+            <div class="terminal-header">DEFENDER TERMINAL</div>
+            <div class="terminal-body">
+                <div id="defender-output" class="output">
+                    > Defender Monitoring Console<br>
+                    > Waiting for threats...<br>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
