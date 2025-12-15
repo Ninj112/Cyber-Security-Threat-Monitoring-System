@@ -18,6 +18,7 @@ LOG_FILE = "data/attack_log.json"
 THREAT_FILE = "data/threats.txt"
 BLOCKED_FILE = "data/blocked_ips.json"
 THRESHOLD = 3  # Number of attacks before auto-blocking
+MAX_LOG_SIZE = 1000  # Maximum number of attacks to keep in memory
 
 # Initialize data structures
 threat_map = load_threats(THREAT_FILE)
@@ -365,7 +366,7 @@ Recent Activity: {len(messages)} events logged
 
 @app.route('/status')
 def status():
-    """Get system status."""
+    #Get system status.
     load_new_attacks()
     return jsonify({
         "total_threats": queue.size(),
@@ -373,6 +374,13 @@ def status():
         "messages_count": len(messages),
         "attack_types": len(threat_map)
     })
+
+
+@app.route('/favicon.ico')
+def favicon():
+    # Return 204 No Content for favicon requests to avoid 404 errors
+    from flask import make_response
+    return make_response('', 204)
 
 
 if __name__ == '__main__':

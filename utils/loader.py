@@ -1,4 +1,5 @@
-def load_threats(file_path):
+# Utility functions for loading threat data
+def load_threats(file_path): 
     threat_map = {}
     try:
         with open(file_path, 'r') as f:

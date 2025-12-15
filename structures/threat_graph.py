@@ -1,11 +1,11 @@
-"""Simple Graph for Threat Pattern Recognition"""
+# Simple Graph for Threat Pattern Recognition
 
 class ThreatGraph:
     def __init__(self):
         self.graph = {}  # adjacency list: {ip: [related_ips]}
     
     def add_connection(self, ip1, ip2):
-        """Connect two IPs (e.g., similar attack patterns)"""
+        # Connect two IPs (e.g., similar attack patterns)
         if ip1 not in self.graph:
             self.graph[ip1] = []
         if ip2 not in self.graph:
@@ -17,11 +17,11 @@ class ThreatGraph:
             self.graph[ip2].append(ip1)
     
     def get_related(self, ip):
-        """Get IPs with related attack patterns"""
+        # Get IPs with related attack patterns
         return self.graph.get(ip, [])
     
     def find_patterns(self):
-        """Find clusters of related attacks"""
+        # Find clusters of related attacks
         visited = set()
         patterns = []
         
@@ -34,7 +34,7 @@ class ThreatGraph:
         return patterns
     
     def _dfs(self, ip, visited):
-        """Depth-first search to find connected IPs"""
+        # Depth-first search to find connected IPs
         visited.add(ip)
         cluster = [ip]
         
