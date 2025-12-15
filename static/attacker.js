@@ -144,43 +144,65 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+    // IP VALIDATION
+function isValidIP(ip) {
+    if (ip.includes("..")) return false;
 
-    // Handle command execution
-    attackerInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            const cmd = attackerInput.value.trim();
-            if (!cmd) return;
+    const parts = ip.split('.');
+    if (parts.length !== 4) return false;
 
-            attackerInput.value = '';
-            commandHistory.push(cmd);
-            historyIndex = -1;
+    for (const part of parts) {
+        if (!/^\d+$/.test(part)) return false;
+        const n = Number(part);
+        if (n < 0 || n > 255) return false;
+    }
+    return true;
+}
 
-            appendOutput(`attacker@system:~$ ${cmd}`, 'prompt-text');
+// Handle command execution
+attackerInput.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter') return;
 
-            const parts = cmd.split(' ');
-            const command = parts[0].toLowerCase();
+    const cmd = attackerInput.value.trim();
+    if (!cmd) return;
 
-            if (command === 'attack') {
-                if (parts.length >= 3) {
-                    const ip = parts[1];
-                    const attack = parts.slice(2).join(' ');
-                    executeAttack(ip, attack);
-                } else {
-                    appendOutput('[!] Usage: attack <ip> <attack_type>', 'error-text');
-                    appendOutput('    Example: attack 192.168.1.1 SQL Injection', 'info-text');
-                }
-            } else if (command === 'help') {
-                showHelp();
-            } else if (command === 'list') {
-                listAttacks();
-            } else if (command === 'clear') {
-                attackerOutput.innerHTML = '<span class="info-text">Console cleared. Type \'help\' for commands</span><br>';
-            } else {
-                appendOutput(`[!] Unknown command: '${command}'`, 'error-text');
-                appendOutput('    Type \'help\' for available commands', 'info-text');
-            }
+    attackerInput.value = '';
+    commandHistory.push(cmd);
+    historyIndex = -1;
+
+    appendOutput(`attacker@system:~$ ${cmd}`, 'prompt-text');
+
+    const parts = cmd.split(/\s+/);
+    const command = parts[0].toLowerCase();
+
+    if (command === 'attack') {
+        if (parts.length < 3) {
+            appendOutput('[!] Usage: attack <ip> <attack_type>', 'error-text');
+            return;
         }
-    });
+
+        const ip = parts[1];
+        const attack = parts.slice(2).join(' ');
+
+        if (!isValidIP(ip)) {
+            appendOutput(`[!] Invalid IP address: ${ip}`, 'error-text');
+            return;
+        }
+
+        executeAttack(ip, attack);
+        return;
+    }
+
+    if (command === 'help') return showHelp();
+    if (command === 'list') return listAttacks();
+    if (command === 'clear') {
+        attackerOutput.innerHTML = '';
+        return;
+    }
+
+    appendOutput(`[!] Unknown command: '${command}'`, 'error-text');
+});
+
 
     // Focus input on click anywhere
     document.addEventListener('click', function() {
