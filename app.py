@@ -7,6 +7,8 @@ import json
 import time
 import os
 from structures.threat_queue import ThreatQueue, Threat
+from structures.linked_list import ThreatLinkedList
+from structures.threat_graph import ThreatGraph
 from utils.loader import load_threats
 
 app = Flask(__name__)
@@ -19,10 +21,12 @@ THRESHOLD = 3  # Number of attacks before auto-blocking
 
 # Initialize data structures
 threat_map = load_threats(THREAT_FILE)
-queue = ThreatQueue()
-seen = set()
-blocked_ips = set()
-attack_counts = {}
+queue = ThreatQueue()              # Priority Queue for threat ranking
+threat_history = ThreatLinkedList()  # Linked List for dynamic logging
+threat_graph = ThreatGraph()       # Graph for pattern recognition
+seen = set()                       # Hash Set for duplicate detection
+blocked_ips = set()                # Hash Set for blocked IPs
+attack_counts = {}                 # Hash Map for attack counting
 messages = []
 
 
@@ -95,6 +99,12 @@ def load_new_attacks():
                 messages.append(f"[AUTO-BLOCK] IP {ip} blocked after {attack_counts[ip]} attacks")
                 messages.append(f"[ISOLATED] Device {ip} has been isolated from the network")
                 messages.append(f"[ALERT] Security admin notified about IP {ip}")
+            
+            # Build graph connections for pattern recognition
+            if attack_counts[ip] > 1:
+                for other_ip in attack_counts:
+                    if other_ip != ip and attack_counts[other_ip] > 1:
+                        threat_graph.add_connection(ip, other_ip)
 
 
 # Initialize on startup
@@ -165,6 +175,9 @@ def attack():
         log_data = []
 
     log_data.append(entry)
+    
+    # Add to linked list for dynamic logging
+    threat_history.add(entry)
 
     try:
         with open(LOG_FILE, "w") as f:
@@ -298,18 +311,53 @@ Recent Activity: {len(messages)} events logged
         messages.clear()
         response["output"] = "✓ Message log cleared"
         
+    elif cmd.startswith("recent"):
+        # Show recent attacks from linked list
+        parts = cmd.split()
+        n = int(parts[1]) if len(parts) > 1 else 10
+        recent = threat_history.get_recent(n)
+        if recent:
+            response["output"] = "=== RECENT ATTACKS ===\n" + "\n".join([
+                f"  {i+1}. {a['attack']} from {a['ip']} [{a['severity']}]"
+                for i, a in enumerate(recent)
+            ])
+        else:
+            response["output"] = "No recent attacks found"
+    
+    elif cmd == "patterns":
+        # Show attack patterns from graph
+        patterns = threat_graph.find_patterns()
+        if patterns:
+            response["output"] = "=== ATTACK PATTERNS ===\n"
+            for i, cluster in enumerate(patterns, 1):
+                response["output"] += f"\nPattern {i}: {', '.join(cluster)}"
+        else:
+            response["output"] = "No attack patterns detected yet"
+    
+    elif cmd.startswith("related "):
+        # Show related IPs from graph
+        ip = cmd.split(" ", 1)[1].strip()
+        related = threat_graph.get_related(ip)
+        if related:
+            response["output"] = f"=== IPs RELATED TO {ip} ===\n" + "\n".join(f"  • {r}" for r in related)
+        else:
+            response["output"] = f"No related IPs found for {ip}"
+    
     elif cmd == "help":
         # Show help
         response["output"] = """=== DEFENDER COMMANDS ===
-  view            - View all current threats in table
-  stats           - Show threat statistics
-  blocked         - List all blocked IPs
-  isolate <ip>    - Isolate a device from network
-  block <ip>      - Block an IP address
-  unblock <ip>    - Unblock an IP address
-  alert <message> - Send alert to security team
-  clear           - Clear message log
-  help            - Show this help message
+  view              - View all current threats in table
+  stats             - Show threat statistics
+  blocked           - List all blocked IPs
+  recent [n]        - Show n recent attacks (default 10)
+  patterns          - Show attack patterns (graph analysis)
+  related <ip>      - Show IPs with similar attack patterns
+  isolate <ip>      - Isolate a device from network
+  block <ip>        - Block an IP address
+  unblock <ip>      - Unblock an IP address
+  alert <message>   - Send alert to security team
+  clear             - Clear message log
+  help              - Show this help message
 """
     else:
         response["output"] = f"Unknown command: '{cmd}'\nType 'help' for available commands"
