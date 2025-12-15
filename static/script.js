@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const defenderOutput = document.getElementById('defender-output');
 
     let lastThreats = [];
+    let lastMessages = [];
 
     // Function to append to attacker output
     function appendAttacker(text) {
@@ -12,10 +13,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Function to update defender output
-    function updateDefender(threats) {
+    function updateDefender(threats, messages) {
         let output = '> Defender Monitoring Console<br>> Waiting for threats...<br>';
         threats.forEach(t => {
             output += `[${t.severity}] ${t.ip} | ${t.attack}<br>`;
+        });
+        messages.forEach(m => {
+            output += m + '<br>';
         });
         defenderOutput.innerHTML = output;
         defenderOutput.scrollTop = defenderOutput.scrollHeight;
@@ -44,6 +48,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     .then(data => {
                         if (data.status === 'success') {
                             appendAttacker('[+] Attack executed successfully');
+                        } else if (data.status === 'blocked') {
+                            appendAttacker(`[!] ${data.message}`);
                         } else {
                             appendAttacker('[!] Error executing attack');
                         }
@@ -68,10 +74,13 @@ document.addEventListener('DOMContentLoaded', function() {
     setInterval(() => {
         fetch('/threats')
         .then(response => response.json())
-        .then(threats => {
-            if (JSON.stringify(threats) !== JSON.stringify(lastThreats)) {
-                updateDefender(threats);
+        .then(data => {
+            const threats = data.threats;
+            const messages = data.messages;
+            if (JSON.stringify(threats) !== JSON.stringify(lastThreats) || JSON.stringify(messages) !== JSON.stringify(lastMessages)) {
+                updateDefender(threats, messages);
                 lastThreats = threats;
+                lastMessages = messages;
             }
         });
     }, 1000);

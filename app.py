@@ -14,6 +14,11 @@ threat_map = load_threats(THREAT_FILE)
 queue = ThreatQueue()
 history = ThreatLinkedList()
 seen = set()
+blocked_ips = set()
+attack_counts = {}
+messages = []
+
+THRESHOLD = 3  # Number of attacks before blocking
 
 def load_new_attacks():
     try:
@@ -30,6 +35,19 @@ def load_new_attacks():
             queue.push(threat)
             history.add(threat)
 
+            # Count attacks per IP
+            ip = a["ip"]
+            if ip not in attack_counts:
+                attack_counts[ip] = 0
+            attack_counts[ip] += 1
+
+            # Check if should block
+            if attack_counts[ip] >= THRESHOLD and ip not in blocked_ips:
+                blocked_ips.add(ip)
+                messages.append(f"[BLOCKED] IP {ip} has been blocked due to multiple attacks.")
+                messages.append(f"[ISOLATED] Device {ip} has been isolated.")
+                messages.append(f"[ALERT] Admin alerted about suspicious activity from {ip}.")
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -40,6 +58,9 @@ def attack():
     ip = data.get('ip')
     attack_type = data.get('attack')
     if ip and attack_type:
+        if ip in blocked_ips:
+            return jsonify({"status": "blocked", "message": f"IP {ip} is blocked."})
+
         entry = {
             "ip": ip,
             "attack": attack_type,
@@ -71,7 +92,7 @@ def threats():
             "attack": t.attack,
             "severity": t.severity
         })
-    return jsonify(threats_list)
+    return jsonify({"threats": threats_list, "messages": messages})
 
 if __name__ == '__main__':
     app.run(debug=True)
