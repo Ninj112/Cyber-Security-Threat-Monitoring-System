@@ -1,7 +1,6 @@
-"""
-Cyber Security Threat Monitoring System - Main Application
-A Flask-based web application for simulating and monitoring cyber threats
-"""
+# Cyber Security Threat Monitoring System - Main Application
+# A Flask-based web application for simulating and monitoring cyber threats
+
 from flask import Flask, render_template, request, jsonify
 import json
 import time
