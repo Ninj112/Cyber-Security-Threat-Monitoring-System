@@ -87,6 +87,9 @@ def load_new_attacks():
                 time=attack_data["time"]
             )
             queue.push(threat)
+            
+            # Add to linked list for recent history
+            threat_history.add(attack_data)
 
             # Count attacks per IP
             ip = attack_data["ip"]
@@ -110,6 +113,7 @@ def load_new_attacks():
 # Initialize on startup
 ensure_data_files()
 load_blocked_ips()
+load_new_attacks()  # Load existing attacks on startup
 
 
 @app.route('/')

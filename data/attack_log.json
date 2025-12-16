@@ -1,8 +1,92 @@
 [
   {
-    "ip": "192.168.99.1",
+    "ip": "192.168.1.10",
+    "attack": "SQL Injection",
+    "severity": "HIGH",
+    "time": 1734307200.0
+  },
+  {
+    "ip": "192.168.1.10",
+    "attack": "XSS",
+    "severity": "MEDIUM",
+    "time": 1734307205.0
+  },
+  {
+    "ip": "192.168.1.11",
+    "attack": "SQL Injection",
+    "severity": "HIGH",
+    "time": 1734307210.0
+  },
+  {
+    "ip": "192.168.1.11",
+    "attack": "DDoS",
+    "severity": "HIGH",
+    "time": 1734307215.0
+  },
+  {
+    "ip": "192.168.1.12",
+    "attack": "Brute Force",
+    "severity": "HIGH",
+    "time": 1734307220.0
+  },
+  {
+    "ip": "192.168.1.12",
+    "attack": "SQL Injection",
+    "severity": "HIGH",
+    "time": 1734307225.0
+  },
+  {
+    "ip": "10.0.0.5",
     "attack": "Port Scan",
     "severity": "LOW",
-    "time": 1765823489.1394625
+    "time": 1734307230.0
+  },
+  {
+    "ip": "10.0.0.5",
+    "attack": "XSS",
+    "severity": "MEDIUM",
+    "time": 1734307235.0
+  },
+  {
+    "ip": "10.0.0.6",
+    "attack": "DDoS",
+    "severity": "HIGH",
+    "time": 1734307240.0
+  },
+  {
+    "ip": "10.0.0.6",
+    "attack": "Malware",
+    "severity": "HIGH",
+    "time": 1734307245.0
+  },
+  {
+    "ip": "172.16.0.100",
+    "attack": "Phishing",
+    "severity": "MEDIUM",
+    "time": 1734307250.0
+  },
+  {
+    "ip": "172.16.0.100",
+    "attack": "SQL Injection",
+    "severity": "HIGH",
+    "time": 1734307255.0
+  },
+  {
+    "ip": "203.0.113.50",
+    "attack": "MITM",
+    "severity": "HIGH",
+    "time": 1734307260.0
+  },
+  {
+    "ip": "198.51.100.25",
+    "attack": "Port Scan",
+    "severity": "LOW",
+    "time": 1734307265.0
+  },
+  {
+    "ip": "192.168.1.10",
+    "attack": "DDoS",
+    "severity": "HIGH",
+    "time": 1734307270.0
   }
 ]
